@@ -7,6 +7,8 @@
 -- Special thanks:
 -- RazorShultz, RavenAscendant, Big Angry Negro, SparksTheUnicorn, Lucy.xr
 --
+local WEAPON_INFINITE_QUEUE = -1
+
 local switch_info = nil
 local scopes_table = utils_data.collect_sections(ini_sys, {"addons_table"})
 local scope_mappings = {}
@@ -28,7 +30,7 @@ function switch_scope()
         switch_info.parent_section = ini_sys:r_string_ex(switch_info.weapon_section, "parent_section")
         log("parent: %s", switch_info.parent_section)
 
-        switch_info.saved_queue_size = the_weapon:cast_Weapon():GetFireMode()
+        switch_info.saved_queue_size = ActorMenu.get_maingame().m_ui_hud_states.m_fire_mode:GetText()
 
         if switch_info.weapon_section == switch_info.parent_section then
             attach_valid_scope(the_weapon)
@@ -139,8 +141,14 @@ function reset_firemode_callback()
     if weapon then
         log("new weapon: %s (#%s)", weapon:section(), weapon:id())
 
-        log("reset queue size to: %s", switch_info.saved_queue_size)
-        weapon:set_queue_size(switch_info.saved_queue_size)
+        local new_queue_size = switch_info.saved_queue_size
+        if new_queue_size == "A" then
+            new_queue_size = WEAPON_INFINITE_QUEUE
+        end
+
+        log("reset queue size to: %s (%s)", new_queue_size, switch_info.saved_queue_size)
+
+        weapon:set_queue_size(new_queue_size)
     end
 
     reset_state("done.")
