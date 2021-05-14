@@ -36,6 +36,7 @@
 		<command id="kb_firemode_next"					exe="wpn_firemode_next"/>
 		<command id="kb_firemode_prev"					exe="wpn_firemode_prev"/>	
 		<command id="kb_suppressor"						exe="custom13"/> 
+		<command id="kb_scope"							exe="custom25"/>
 		<command id="kb_grenade_throw"					exe="custom19"/>
 		<command id="kb_unload_all"						exe="custom15"/>
 		<command id="kb_lower_weapon"					exe="safemode"/>
