@@ -1,4 +1,4 @@
-Scope Toggle hotkey addon for [S.T.A.L.K.E.R. Anomaly](https://www.moddb.com/mods/stalker-anomaly) (1.5.1)
+Scope Toggle hotkey addon for [S.T.A.L.K.E.R. Anomaly](https://www.moddb.com/mods/stalker-anomaly) (v1.5.1)
 
 # Installation
 * Cram it into the gamedata like a baws.
@@ -6,7 +6,9 @@ Scope Toggle hotkey addon for [S.T.A.L.K.E.R. Anomaly](https://www.moddb.com/mod
 
 # But Why?
 This mod adds a new keybinding (`Toggle Scope`) to the settings menu under weapons section. Pressing this key while holding a weapon will quickly attach the *first* compatible scope from your inventory.
+
 If the weapon already has a scope attached, it will be removed and remembered as the "preferred" scope for that weapon. If your favorite scope is not picked, just attach it first manually and the mod will honor your preference from then on.
+
 The mod will also remember the last firing mode before attaching/detaching the scope, so you will not have to fumble with the fire mode switcher during a firefight.
 
 # Special Thanks
