@@ -1,0 +1,190 @@
+-- ToggleScope v0.1
+-- https://github.com/Ishmaeel/toggle-scope
+-- 
+-- Remember to make a "Toggle Scope" keybinding under control settings.
+--
+-- Special thanks:
+-- RazorShultz, RavenAscendant, Big Angry Negro, SparksTheUnicorn
+local WEAPON_INFINITE_QUEUE = -1
+
+local switch_info = nil
+local scopes_table = utils_data.collect_sections(ini_sys, {"addons_table"})
+local scope_mappings = {}
+
+function switch_scope()
+    printp("#", "start.")
+
+    if switch_info then
+        log("busy.")
+        return
+    end
+
+    local the_weapon = db.actor:active_item()
+
+    if the_weapon then
+        switch_info = {weapon_id = the_weapon:id(), weapon_section = the_weapon:section()}
+        log("active weapon: %s (#%s)", switch_info.weapon_section, switch_info.weapon_id)
+
+        switch_info.parent_section = ini_sys:r_string_ex(switch_info.weapon_section, "parent_section")
+        log("parent: %s", switch_info.parent_section)
+
+        switch_info.saved_queue_size = ActorMenu.get_maingame().m_ui_hud_states.m_fire_mode:GetText()
+
+        if switch_info.weapon_section == switch_info.parent_section then
+            attach_valid_scope(the_weapon)
+        elseif switch_info.parent_section then
+            detach_current_scope()
+        else
+            reset_state("nothing to do.")
+        end
+    else
+        reset_state("no weapon.")
+    end
+end
+
+function attach_valid_scope(the_weapon)
+    log_trace("attach_valid_scope")
+
+    local valid_scopes = parse_list(ini_sys, switch_info.weapon_section, "scopes")
+
+    log("there are %s scopes for %s", table.getn(valid_scopes), switch_info.weapon_section)
+
+    local preferred_scope = scope_mappings[switch_info.weapon_section]
+    if preferred_scope then
+        log("preferred scope is %s", preferred_scope)
+        table.insert(valid_scopes, 1, preferred_scope)
+    end
+
+    for _, scope_name in pairs(valid_scopes) do
+        local the_scope = db.actor:object(scope_name)
+
+        if (the_scope) then
+            log("attaching %s...", scope_name)
+            switch_info.scope_id = the_scope:id()
+            break
+        else
+            log("scope %s not found in inventory.", scope_name)
+        end
+    end
+
+    if switch_info.scope_id then
+        db.actor:hide_weapon()
+        CreateTimeEvent(0, "attach_delayed", 1, attach_scope_callback)
+    else
+        reset_state("scope not found.")
+    end
+end
+
+function attach_scope_callback()
+    log_trace("attach_scope_callback")
+
+    RemoveTimeEvent(0, "attach_delayed")
+
+    local the_weapon = level.object_by_id(switch_info.weapon_id)
+    local the_scope = level.object_by_id(switch_info.scope_id)
+
+    item_weapon.attach_scope(the_scope, the_weapon)
+
+    CreateTimeEvent(0, "restore_delayed", 1, restore_weapon_callback)
+end
+
+function detach_current_scope()
+    log_trace("detach_current_scope")
+
+    local weapon_section = switch_info.weapon_section
+    local parent_section = switch_info.parent_section
+
+    if weapon_section and parent_section then
+        for scope, _ in pairs(scopes_table) do
+            if (string.find(weapon_section, scope)) then
+                log("removing %s from %s.", scope, parent_section)
+                scope_mappings[parent_section] = scope -- remember it as the preferred scope for this weapon.
+                break
+            end
+        end
+
+        db.actor:hide_weapon()
+        CreateTimeEvent(0, "detach_delayed", 1, detach_scope_callback)
+    else
+        reset_state("cannot detach scope")
+    end
+end
+
+function detach_scope_callback()
+    log_trace("detach_scope_callback")
+
+    RemoveTimeEvent(0, "detach_delayed")
+
+    local the_weapon = level.object_by_id(switch_info.weapon_id)
+    item_weapon.detach_scope(the_weapon)
+
+    CreateTimeEvent(0, "restore_delayed", 1, restore_weapon_callback)
+end
+
+function restore_weapon_callback()
+    log_trace("restore_weapon_callback")
+
+    RemoveTimeEvent(0, "restore_delayed")
+    db.actor:restore_weapon()
+
+    CreateTimeEvent(0, "reset_firemode", 0, reset_firemode_callback)
+end
+
+function reset_firemode_callback()
+    log_trace("reset_firemode_callback")
+
+    RemoveTimeEvent(0, "reset_firemode")
+
+    local weapon = db.actor:active_item()
+    if weapon then
+        log("new weapon: %s (#%s)", weapon:section(), weapon:id())
+
+        local new_queue_size = switch_info.saved_queue_size
+        if new_queue_size == "A" then
+            new_queue_size = WEAPON_INFINITE_QUEUE
+        end
+
+        log("reset queue size to: %s (%s)", new_queue_size, switch_info.saved_queue_size)
+
+        weapon:set_queue_size(new_queue_size)
+    end
+
+    reset_state("done.")
+end
+
+function reset_state(msg)
+    printp("=", msg)
+    switch_info = nil
+end
+
+function ishy_on_key_release(key)
+    local bind = dik_to_bind(key)
+
+    if (bind == key_bindings.kCUSTOM25) then
+        local success, err = pcall(switch_scope)
+
+        if not success then
+            log_error("whoops %s", err)
+        end
+    end
+end
+
+function on_game_start()
+    RegisterScriptCallback("on_key_release", ishy_on_key_release)
+end
+
+function log(msg, ...)
+    printp(" ", msg, ...)
+end
+
+function log_trace(msg, ...)
+    printp("*", msg, ...)
+end
+
+function log_error(msg, ...)
+    printp("!", msg, ...)
+end
+
+function printp(prefix, msg, ...)
+    printf(prefix .. " [IshyScope] " .. msg, ...)
+end
