@@ -12,7 +12,7 @@ If the weapon already has a scope attached, it will be removed and remembered as
 The mod will also remember the last firing mode before attaching/detaching the scope, so you will not have to fumble with the fire mode switcher during a firefight.
 
 # Special Thanks
-RazorShultz, RavenAscendant, Big Angry Negro, SparksTheUnicorn
+RazorShultz, RavenAscendant, Big Angry Negro, SparksTheUnicorn, Lucy.xr
 
 # Known Issues
 * After switching scopes, **AN-94** may fire with wrong RPM in two-shot burst mode.
