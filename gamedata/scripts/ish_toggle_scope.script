@@ -1,5 +1,5 @@
 --
--- ToggleScope v0.1
+-- ToggleScope v0.3
 -- https://github.com/Ishmaeel/toggle-scope
 -- 
 -- Remember to make a "Toggle Scope" keybinding under control settings.
@@ -167,6 +167,7 @@ function ishy_on_key_release(key)
 
         if not success then
             log_error("whoops %s", err)
+            reset_state("unexpected error.")
         end
     end
 end
