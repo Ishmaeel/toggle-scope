@@ -1,5 +1,5 @@
 --
--- ToggleScope v1.0
+-- ToggleScope v1.1
 -- https://github.com/Ishmaeel/toggle-scope
 -- 
 -- Remember to make a "Toggle Scope" keybinding under control settings.
@@ -23,29 +23,46 @@ function switch_scope()
     end
 
     local the_weapon = db.actor:active_item()
-
-    if the_weapon then
-        switch_info = {weapon_id = the_weapon:id(), weapon_section = the_weapon:section()}
-        log("active weapon: %s (#%s)", switch_info.weapon_section, switch_info.weapon_id)
-
-        local secondary = db.actor:item_in_slot(SECONDARY_WEAPON_SLOT)
-        switch_info.is_secondary = secondary and switch_info.weapon_id == secondary:id()
-        log("processing %s weapon.", (switch_info.is_secondary and 'secondary' or 'primary'))
-
-        switch_info.parent_section = ini_sys:r_string_ex(switch_info.weapon_section, "parent_section")
-        log("parent: %s", switch_info.parent_section)
-
-        switch_info.saved_queue_size = ActorMenu.get_maingame().m_ui_hud_states.m_fire_mode:GetText()
-
-        if switch_info.weapon_section == switch_info.parent_section then
-            attach_valid_scope(the_weapon)
-        elseif switch_info.parent_section then
-            detach_current_scope()
-        else
-            reset_state("nothing to do.")
-        end
-    else
+    if not the_weapon then
         reset_state("no weapon.")
+        return
+    end
+
+    local cWeapon = the_weapon:cast_Weapon()
+    if not cWeapon then
+        reset_state("not a weapon.")
+        return
+    end
+
+    switch_info = {weapon_id = the_weapon:id(), weapon_section = the_weapon:section()}
+    log("active weapon: %s (#%s)", switch_info.weapon_section, switch_info.weapon_id)
+
+    local secondary = db.actor:item_in_slot(SECONDARY_WEAPON_SLOT)
+    switch_info.is_secondary = secondary and switch_info.weapon_id == secondary:id()
+    log("processing %s weapon.", (switch_info.is_secondary and 'secondary' or 'primary'))
+
+    switch_info.parent_section = ini_sys:r_string_ex(switch_info.weapon_section, "parent_section")
+
+    local native_scope = cWeapon:GetScopeName()
+    if native_scope then
+        local is_attached = the_weapon:cast_Weapon():IsScopeAttached()
+
+        log("weapon has native scope: %s (%s)", native_scope, (is_attached and "attached" or "detached"))
+        switch_info.native_scope = native_scope
+        switch_info.force_detach = is_attached
+        switch_info.force_attach = not is_attached
+    end
+
+    log("parent: %s, native: %s", switch_info.parent_section, switch_info.native_scope)
+
+    switch_info.saved_queue_size = ActorMenu.get_maingame().m_ui_hud_states.m_fire_mode:GetText()
+
+    if switch_info.weapon_section == switch_info.parent_section or switch_info.force_attach then
+        attach_valid_scope(the_weapon)
+    elseif switch_info.parent_section or switch_info.force_detach then
+        detach_current_scope()
+    else
+        reset_state("nothing to do.")
     end
 end
 
@@ -53,6 +70,10 @@ function attach_valid_scope(the_weapon)
     log_trace("attach_valid_scope")
 
     local valid_scopes = parse_list(ini_sys, switch_info.weapon_section, "scopes")
+
+    if (switch_info.native_scope) then
+        table.insert(valid_scopes, 1, switch_info.native_scope)
+    end
 
     log("there are %s scopes for %s", table.getn(valid_scopes), switch_info.weapon_section)
 
@@ -90,7 +111,12 @@ function attach_scope_callback()
     local the_weapon = level.object_by_id(switch_info.weapon_id)
     local the_scope = level.object_by_id(switch_info.scope_id)
 
-    item_weapon.attach_scope(the_scope, the_weapon)
+    if (switch_info.force_attach) then
+        utils_item.attach_addon(the_weapon, the_scope, "scope", true)
+        xr_effects.play_snd(db.actor, nil, {[1] = "interface\\inv_attach_addon"})
+    else
+        item_weapon.attach_scope(the_scope, the_weapon)
+    end
 
     CreateTimeEvent(0, "restore_delayed", 1, restore_weapon_callback)
 end
@@ -100,20 +126,28 @@ function detach_current_scope()
 
     local weapon_section = switch_info.weapon_section
     local parent_section = switch_info.parent_section
+    local current_scope
 
     if weapon_section and parent_section then
         for scope, _ in pairs(scopes_table) do
             if (string.find(weapon_section, scope)) then
                 log("removing %s from %s.", scope, parent_section)
-                scope_mappings[parent_section] = scope -- remember it as the preferred scope for this weapon.
+                current_scope = scope
                 break
             end
         end
+    elseif switch_info.force_detach then
+        parent_section = weapon_section
+        current_scope = switch_info.native_scope
+    else
+        reset_state("cannot detach scope")
+    end
+
+    if current_scope then
+        scope_mappings[parent_section] = current_scope
 
         db.actor:hide_weapon()
         CreateTimeEvent(0, "detach_delayed", 1, detach_scope_callback)
-    else
-        reset_state("cannot detach scope")
     end
 end
 
@@ -123,7 +157,14 @@ function detach_scope_callback()
     RemoveTimeEvent(0, "detach_delayed")
 
     local the_weapon = level.object_by_id(switch_info.weapon_id)
-    item_weapon.detach_scope(the_weapon)
+    local the_scope = level.object_by_id(switch_info.scope_id)
+
+    if (switch_info.force_detach) then
+        utils_item.detach_addon(the_weapon, nil, "scope")
+        xr_effects.play_snd(db.actor, nil, {[1] = "interface\\inv_detach_addon"})
+    else
+        item_weapon.detach_scope(the_weapon)
+    end
 
     CreateTimeEvent(0, "restore_delayed", 1, restore_weapon_callback)
 end
@@ -133,7 +174,7 @@ function restore_weapon_callback()
 
     RemoveTimeEvent(0, "restore_delayed")
 
-    if switch_info.is_secondary then
+    if switch_info.is_secondary and switch_info.new_weapon_id and not switch_info.native_scope then
         log("re-equipping secondary weapon.")
         local new_weapon = level.object_by_id(switch_info.new_weapon_id)
         db.actor:move_to_slot(new_weapon, SECONDARY_WEAPON_SLOT)
@@ -150,17 +191,21 @@ function reset_firemode_callback()
 
     RemoveTimeEvent(0, "reset_firemode")
 
-    local weapon = db.actor:active_item()
-    if weapon then
-        log("new weapon: %s (#%s)", weapon:section(), weapon:id())
+    if switch_info.native_scope then
+        log("no reset required.")
+    else
+        local weapon = db.actor:active_item()
+        if weapon then
+            log("new weapon: %s (#%s)", weapon:section(), weapon:id())
 
-        local new_queue_size = switch_info.saved_queue_size
-        if new_queue_size == "A" then
-            new_queue_size = WEAPON_INFINITE_QUEUE
+            local new_queue_size = switch_info.saved_queue_size
+            if new_queue_size == "A" then
+                new_queue_size = WEAPON_INFINITE_QUEUE
+            end
+
+            log("resetting queue size to: %s (%s)", new_queue_size, switch_info.saved_queue_size)
+            weapon:set_queue_size(new_queue_size)
         end
-
-        log("resetting queue size to: %s (%s)", new_queue_size, switch_info.saved_queue_size)
-        weapon:set_queue_size(new_queue_size)
     end
 
     reset_state("done.")
