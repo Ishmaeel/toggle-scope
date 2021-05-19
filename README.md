@@ -12,7 +12,9 @@ If the weapon already has a scope attached, it will be removed and remembered as
 
 The addon will also remember the last firing mode before attaching/detaching the scope, so you will not have to fumble with the fire mode switcher during a firefight.
 
-Now with a workaround for the engine bug that causes the weapon from the secondary slot to be unequipped upon scope change.   
+Now with a workaround for the engine bug that causes the weapon from the secondary slot to be unequipped upon scope change. 
+
+Also, scopes on weapons with multiple scope types can now be changed quickly via drag/drop or doubleclick from the inventory, without first detaching the current scope.  
 
 # Special Thanks
 RazorShultz, RavenAscendant, Big Angry Negro, SparksTheUnicorn, Lucy.xr
