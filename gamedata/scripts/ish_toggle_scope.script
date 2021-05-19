@@ -1,5 +1,5 @@
 --
--- ToggleScope v1.1
+-- ToggleScope v1.2
 -- https://github.com/Ishmaeel/toggle-scope
 -- 
 -- Remember to make a "Toggle Scope" keybinding under control settings.
@@ -13,6 +13,8 @@ local SECONDARY_WEAPON_SLOT = 2
 local switch_info = nil
 local scopes_table = utils_data.collect_sections(ini_sys, {"addons_table"})
 local scope_mappings = {}
+
+local attach_scope_original = nil
 
 function switch_scope()
     printp("#", "start.")
@@ -240,9 +242,52 @@ function ishy_actor_on_item_take(item)
     log("storing new weapon id: #%s", switch_info.new_weapon_id)
 end
 
+function attach_scope_override(item, weapon)
+    if not item or not weapon then
+        return
+    end
+
+    log_trace("attach_scope_override")
+
+    local weapon_section = weapon:section()
+    local parent_section = ini_sys:r_string_ex(weapon_section, "parent_section")
+
+    if parent_section ~= weapon_section then -- current weapon is already a scoped variant.
+        log("something already attached: %s", weapon_section) -- original [item_weapon.attach_scope] function will ignore this case and prevent changing scopes unless we do something about it.
+
+        local current_scope = string.gsub(weapon_section, parent_section .. "_", "")
+
+        if current_scope then
+            local item_section = item:section()
+            local new_weapon_section = (parent_section .. "_" .. item_section)
+
+            local old_weapon = alife_object(weapon:id())
+
+            log("spawning detached scope in inventory: %s", current_scope)
+            local owner = old_weapon and old_weapon.parent_id and get_object_by_id(old_weapon.parent_id)
+            alife_create_item(current_scope, owner)
+
+            log("spawning weapon variant with the new attachment: %s", new_weapon_section)
+            local new_weapon = alife_clone_weapon(old_weapon, new_weapon_section)
+
+            log("releasing attached scope into the void: %s (#%s)", item_section, item:id())
+            alife_release(item)
+
+            return -- all done, no need to call the base function, just bail out.
+        end
+    else
+        return attach_scope_original(item, weapon) -- if we are here, it's none of our business. call the base function to do its thing.
+    end
+end
+
 function on_game_start()
     RegisterScriptCallback("on_key_release", ishy_on_key_release)
     RegisterScriptCallback("actor_on_item_take", ishy_actor_on_item_take)
+
+    if not attach_scope_original then -- monkey patch the original function to intercept scope change attempts. 
+        attach_scope_original = item_weapon.attach_scope
+        item_weapon.attach_scope = attach_scope_override
+    end
 end
 
 function log(msg, ...)
