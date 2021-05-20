@@ -1,4 +1,4 @@
-# ToggleScope v1.0
+# ToggleScope
 Scope Toggle hotkey addon for [S.T.A.L.K.E.R. Anomaly v1.5.1](https://www.moddb.com/mods/stalker-anomaly)
 
 # Installation
