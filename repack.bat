@@ -1,4 +1,4 @@
-set VERSION=v1.2
+set VERSION=v1.4
 set PATH=C:\Program Files\7-Zip\;%PATH%
 
 del "ToggleScope-*.zip"
