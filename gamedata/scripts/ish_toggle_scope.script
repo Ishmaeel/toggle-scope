@@ -1,5 +1,5 @@
 --
--- ToggleScope v1.4
+-- ToggleScope v1.5
 -- https://github.com/Ishmaeel/toggle-scope
 -- 
 -- Remember to make a "Toggle Scope" keybinding under control settings.
@@ -72,14 +72,16 @@ function attach_valid_scope()
         preferred_index = find_first_scope(valid_scopes)
     end
 
-    scope_name = valid_scopes[preferred_index]
-    local the_scope = db.actor:object(scope_name)
-
-    if (the_scope) then
-        log("attaching %s...", scope_name)
-        switch_info.scope_id = the_scope:id()
-    else
-        log("scope %s not found in inventory.", scope_name)
+    if preferred_index then
+        local scope_name = valid_scopes[preferred_index]
+        local the_scope = db.actor:object(scope_name)
+        
+        if (the_scope) then
+            log("attaching %s...", scope_name)
+            switch_info.scope_id = the_scope:id()
+        else
+            log("scope %s not found in inventory.", scope_name)
+        end
     end
 
     if switch_info.scope_id then
@@ -254,7 +256,6 @@ function find_first_scope(valid_scopes)
         end
     end
 
-    log_error("find_first_scope failed! this should not happen. please let me know.")
     return nil
 end
 

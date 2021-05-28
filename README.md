@@ -33,3 +33,5 @@ RazorShultz, RavenAscendant, Big Angry Negro, SparksTheUnicorn, Lucy.xr
 * Not tested with grenade launcher attachments. Might eat your grenades.
 * Firing mode preservation may not work across game reloads and map changes.
 * Firing mode preservation does not work with manual drag/drop swaps from inventory. 
+
+https://github.com/Ishmaeel/toggle-scope
