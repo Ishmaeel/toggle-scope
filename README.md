@@ -23,6 +23,7 @@ Last but not least, you can now drag a scope onto an already-scoped weapon witho
 * **1.2** Added *"swap"*: Enabled quickly changing to a new scope without detaching the current one.
 * **1.3** Fixed secondary weapon unequipping bug during manual *swap*. (Unreleased)
 * **1.4** Added *"cycle"*: Double-tap toggle button to quickly *cycle* to the next compatible scope in inventory.
+* **1.5** Fixed addon getting stuck when hotkey is pressed with no compatible scope in inventory.
 
 # Special Thanks
 RazorShultz, RavenAscendant, Big Angry Negro, SparksTheUnicorn, Lucy.xr
