@@ -30,7 +30,7 @@ jobs:
         run: zip -r ToggleScope.zip gamedata README.md
       
       - name: Publish
-      - uses: "marvinpinto/action-automatic-releases@latest"
+        uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
