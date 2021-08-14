@@ -1,6 +1,7 @@
 --
--- ToggleScope v1.5
+-- ToggleScope v1.5.1
 -- https://github.com/Ishmaeel/toggle-scope
+-- Last Modified: 2021.08.14
 -- 
 -- Remember to make a "Toggle Scope" keybinding under control settings.
 --
@@ -97,8 +98,6 @@ end
 function attach_scope_callback()
     log_trace("attach_scope_callback")
 
-    RemoveTimeEvent(0, "attach_delayed")
-
     local the_weapon = level.object_by_id(switch_info.weapon_id) or level.object_by_id(switch_info.new_weapon_id)
     local the_scope = level.object_by_id(switch_info.scope_id)
 
@@ -111,6 +110,8 @@ function attach_scope_callback()
     end
 
     CreateTimeEvent(0, "restore_delayed", 1, restore_weapon_callback)
+
+    return true
 end
 
 function detach_current_scope()
@@ -147,8 +148,6 @@ end
 function detach_scope_callback()
     log_trace("detach_scope_callback")
 
-    RemoveTimeEvent(0, "detach_delayed")
-
     local the_weapon = level.object_by_id(switch_info.weapon_id)
     local the_scope = level.object_by_id(switch_info.scope_id)
 
@@ -166,23 +165,23 @@ function detach_scope_callback()
     else
         CreateTimeEvent(0, "restore_delayed", 1, restore_weapon_callback)
     end
+
+    return true
 end
 
 function restore_weapon_callback()
     log_trace("restore_weapon_callback")
 
-    RemoveTimeEvent(0, "restore_delayed")
-
     log("restoring weapon.")
     db.actor:restore_weapon()
 
     CreateTimeEvent(0, "reset_firemode", 0, reset_firemode_callback)
+
+    return true
 end
 
 function reset_firemode_callback()
     log_trace("reset_firemode_callback")
-
-    RemoveTimeEvent(0, "reset_firemode")
 
     if switch_info.native_scope then
         log("no reset required.")
@@ -202,6 +201,7 @@ function reset_firemode_callback()
     end
 
     reset_state("done.")
+    return true
 end
 
 function reset_state(msg)
