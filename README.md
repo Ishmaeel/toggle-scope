@@ -24,6 +24,7 @@ Last but not least, you can now drag a scope onto an already-scoped weapon witho
 * **1.3** Fixed secondary weapon unequipping bug during manual *swap*. (Unreleased)
 * **1.4** Added *"cycle"*: Double-tap toggle button to quickly *cycle* to the next compatible scope in inventory.
 * **1.5** Fixed addon getting stuck when hotkey is pressed with no compatible scope in inventory.
+* **1.6** Fixed weapons getting "jammed" when toggling scopes with the HUD turned off. 
 
 # Special Thanks
 RazorShultz, RavenAscendant, Big Angry Negro, SparksTheUnicorn, Lucy.xr
@@ -33,6 +34,7 @@ RazorShultz, RavenAscendant, Big Angry Negro, SparksTheUnicorn, Lucy.xr
 * After switching scopes in single-fire mode, the mode switcher may seem "stuck" for the next keypress. You may have to press the switch button twice to change to next fire mode.
 * Not tested with grenade launcher attachments. Might eat your grenades.
 * Firing mode preservation may not work across game reloads and map changes.
-* Firing mode preservation does not work with manual drag/drop swaps from inventory. 
+* Firing mode preservation does not work with manual drag/drop swaps from inventory.
+* Playing without HUD will be wonky. Switch to a minimal HUD setup instead.
 
 https://github.com/Ishmaeel/toggle-scope
