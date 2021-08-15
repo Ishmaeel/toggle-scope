@@ -1,5 +1,5 @@
 --
--- ToggleScope v1.5
+-- ToggleScope v1.6
 -- https://github.com/Ishmaeel/toggle-scope
 -- 
 -- Remember to make a "Toggle Scope" keybinding under control settings.
@@ -43,7 +43,7 @@ function switch_scope()
 
     log("active weapon: %s (#%s) parent: %s", switch_info.weapon_section, switch_info.weapon_id, switch_info.parent_section)
 
-    switch_info.saved_queue_size = ActorMenu.get_maingame().m_ui_hud_states.m_fire_mode:GetText()
+    switch_info.saved_queue_size = get_queue_size(cWeapon)
 
     if switch_info.weapon_section == switch_info.parent_section or switch_info.force_attach then
         attach_valid_scope()
@@ -52,6 +52,17 @@ function switch_scope()
     else
         reset_state("nothing to do.")
     end
+end
+
+function get_queue_size(cWeapon)
+    log_trace("get_queue_size")
+
+    local retval = ActorMenu.get_maingame().m_ui_hud_states.m_fire_mode:GetText()
+    if retval == "" then
+        retval = cWeapon:GetFireMode()
+        log("HUD turned off, defaulting to fire mode: %s", retval)
+    end
+    return retval
 end
 
 function attach_valid_scope()
@@ -75,7 +86,7 @@ function attach_valid_scope()
     if preferred_index then
         local scope_name = valid_scopes[preferred_index]
         local the_scope = db.actor:object(scope_name)
-        
+
         if (the_scope) then
             log("attaching %s...", scope_name)
             switch_info.scope_id = the_scope:id()
@@ -223,6 +234,8 @@ function ishy_on_key_release(key)
 end
 
 function create_switch_info(the_weapon, cWeapon)
+    log_trace("create_switch_info")
+
     switch_info = {weapon_id = the_weapon:id(), weapon_section = the_weapon:section()}
     switch_info.parent_section = ini_sys:r_string_ex(switch_info.weapon_section, "parent_section")
     switch_info.valid_scopes = parse_list(ini_sys, switch_info.weapon_section, "scopes")
@@ -250,6 +263,8 @@ function create_switch_info(the_weapon, cWeapon)
 end
 
 function find_first_scope(valid_scopes)
+    log_trace("find_first_scope")
+
     for idx, scope_name in pairs(valid_scopes) do
         if db.actor:object(scope_name) then
             return idx
@@ -278,6 +293,8 @@ function find_next_scope(valid_scopes, current_scope)
 end
 
 function find_preferred_scope(valid_scopes, preferred_scope)
+    log_trace("find_preferred_scope")
+
     for idx, scope_name in pairs(valid_scopes) do
         if scope_name == preferred_scope then
             log("preferred scope is %s (%s)", preferred_scope, idx)
@@ -351,7 +368,7 @@ function detach_scope_override(weapon)
         return
     end
 
-    log_trace("attach_scope_override")
+    log_trace("detach_scope_override")
 
     is_secondary = is_secondary_weapon(weapon)
     log("detaching from %s weapon.", (is_secondary and 'secondary' or 'primary'))
@@ -368,6 +385,8 @@ function is_secondary_weapon(weapon)
 end
 
 function on_game_start()
+    log_trace("on_game_start")
+
     RegisterScriptCallback("on_key_release", ishy_on_key_release)
     RegisterScriptCallback("actor_on_item_take", ishy_actor_on_item_take)
 
