@@ -1,5 +1,6 @@
 --
--- ToggleScope v1.6
+-- ToggleScope v1.7
+-- Last modified: 2021.08.23
 -- https://github.com/Ishmaeel/toggle-scope
 -- 
 -- Remember to make a "Toggle Scope" keybinding under control settings.
@@ -330,7 +331,7 @@ function attach_scope_override(item, weapon)
     log_trace("attach_scope_override")
 
     is_secondary = is_secondary_weapon(weapon)
-    log("attaching to %s weapon.", (is_secondary and 'secondary' or 'primary'))
+    log("processing %s weapon.", (is_secondary and 'secondary' or 'primary'))
 
     local weapon_section = weapon:section()
     local parent_section = ini_sys:r_string_ex(weapon_section, "parent_section")
@@ -343,6 +344,13 @@ function attach_scope_override(item, weapon)
         if current_scope then
             local item_section = item:section()
             local new_weapon_section = (parent_section .. "_" .. item_section)
+
+            local new_weapon_class = ini_sys:r_string_ex(new_weapon_section, "class")
+
+            if not new_weapon_class then
+                log("nice try. no such weapon: %s", new_weapon_section)
+                return
+            end
 
             local old_weapon = alife_object(weapon:id())
 
