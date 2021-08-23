@@ -345,10 +345,11 @@ function attach_scope_override(item, weapon)
             local item_section = item:section()
             local new_weapon_section = (parent_section .. "_" .. item_section)
 
+            log("looking up weapon %s...", new_weapon_section)
             local new_weapon_class = ini_sys:r_string_ex(new_weapon_section, "class")
 
             if not new_weapon_class then
-                log("nice try. no such weapon: %s", new_weapon_section)
+                reset_state("nice try. no such weapon.")
                 return
             end
 
