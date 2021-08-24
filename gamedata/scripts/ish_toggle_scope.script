@@ -1,6 +1,6 @@
 --
 -- ToggleScope v1.7
--- Last modified: 2021.08.23
+-- Last modified: 2021.08.24
 -- https://github.com/Ishmaeel/toggle-scope
 -- 
 -- Remember to make a "Toggle Scope" keybinding under control settings.
@@ -8,6 +8,11 @@
 -- Special thanks:
 -- RazorShultz, RavenAscendant, Big Angry Negro, SparksTheUnicorn, Lucy.xr
 --
+
+-- If Custom25 is conflicting with something else, edit the following to choose a free/preferred binding:
+local TOGGLE_SCOPE_BINDING = key_bindings.kCUSTOM25
+-- Stop editing. Everything below is protected by land mines.
+
 local WEAPON_INFINITE_QUEUE = -1
 local SECONDARY_WEAPON_SLOT = 2
 
@@ -224,7 +229,7 @@ end
 function ishy_on_key_release(key)
     local bind = dik_to_bind(key)
 
-    if (bind == key_bindings.kCUSTOM25) then
+    if (bind == TOGGLE_SCOPE_BINDING) then
         local success, err = pcall(switch_scope)
 
         if not success then
