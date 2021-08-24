@@ -1,5 +1,5 @@
 --
--- ToggleScope v1.7
+-- ToggleScope v1.8
 -- Last modified: 2021.08.24
 -- https://github.com/Ishmaeel/toggle-scope
 -- 
@@ -8,7 +8,7 @@
 -- Special thanks:
 -- RazorShultz, RavenAscendant, Big Angry Negro, SparksTheUnicorn, Lucy.xr
 --
-
+--
 -- If Custom25 is conflicting with something else, edit the following to choose a free/preferred binding:
 local TOGGLE_SCOPE_BINDING = key_bindings.kCUSTOM25
 -- Stop editing. Everything below is protected by land mines.
@@ -312,14 +312,16 @@ function find_preferred_scope(valid_scopes, preferred_scope)
 end
 
 function ishy_actor_on_item_take(item)
-    if not (switch_info and item and IsWeapon(item)) then
+    if not (item and IsWeapon(item)) then
         return -- not interested.
     end
 
     log_trace("ishy_actor_on_item_take")
 
-    switch_info.new_weapon_id = item:id()
-    log("grabbed new weapon: %s", switch_info.new_weapon_id)
+    if switch_info then
+        switch_info.new_weapon_id = item:id()
+        log("grabbed new weapon: %s", switch_info.new_weapon_id)
+    end
 
     if is_secondary then
         log("re-equipping secondary weapon.")
