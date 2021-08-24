@@ -24,10 +24,11 @@ Last but not least, you can now drag a scope onto an already-scoped weapon witho
 * **1.3** Fixed secondary weapon unequipping bug during manual *swap*. (Unreleased)
 * **1.4** Added *"cycle"*: Double-tap toggle button to quickly *cycle* to the next compatible scope in inventory.
 * **1.5** Fixed addon getting stuck when hotkey is pressed with no compatible scope in inventory.
-* **1.6** Fixed weapons getting "jammed" when toggling scopes with the HUD turned off. 
+* **1.6** Fixed weapons getting "jammed" when toggling scopes with the HUD turned off.
+* **1.7** Fixed crash when attempting to swap to an incompatible scope. 
 
 # Special Thanks
-RazorShultz, RavenAscendant, Big Angry Negro, SparksTheUnicorn, Lucy.xr
+RazorShultz, RavenAscendant, Big Angry Negro, SparksTheUnicorn, Lucy.xr, Maid
 
 # Known Issues
 * After switching scopes, **AN-94** may fire with wrong RPM in two-shot burst mode.
