@@ -1,18 +1,11 @@
 --
--- ToggleScope v1.8
--- Last modified: 2021.08.24
+-- ToggleScope v1.9
+-- Last modified: 2022.01.23
 -- https://github.com/Ishmaeel/toggle-scope
--- 
--- Remember to make a "Toggle Scope" keybinding under control settings.
 --
 -- Special thanks:
 -- RazorShultz, RavenAscendant, Big Angry Negro, SparksTheUnicorn, Lucy.xr
 --
---
--- If Custom25 is conflicting with something else, edit the following to choose a free/preferred binding:
-local TOGGLE_SCOPE_BINDING = key_bindings.kCUSTOM25
--- Stop editing. Everything below is protected by land mines.
-
 local WEAPON_INFINITE_QUEUE = -1
 local SECONDARY_WEAPON_SLOT = 2
 
@@ -227,9 +220,7 @@ function reset_state(msg)
 end
 
 function ishy_on_key_release(key)
-    local bind = dik_to_bind(key)
-
-    if (bind == TOGGLE_SCOPE_BINDING) then
+    if (key == ish_toggle_scope_mcm.KEY_TOGGLE_SCOPE) then
         local success, err = pcall(switch_scope)
 
         if not success then
@@ -418,17 +409,11 @@ function on_game_start()
     end
 end
 
-function log(msg, ...)
-    printp(" ", msg, ...)
-end
+function log(msg, ...) printp(" ", msg, ...) end
 
-function log_trace(msg, ...)
-    printp("*", msg, ...)
-end
+function log_trace(msg, ...) printp("*", msg, ...) end
 
-function log_error(msg, ...)
-    printp("!", msg, ...)
-end
+function log_error(msg, ...) printp("!", msg, ...) end
 
 function printp(prefix, msg, ...)
     -- printf(prefix .. " [IshyScope] " .. msg, ...)
