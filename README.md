@@ -3,10 +3,10 @@ Scope Toggle hotkey addon for [S.T.A.L.K.E.R. Anomaly v1.5.1](https://www.moddb.
 
 # Installation
 * Cram it into the gamedata like a baws.
-* If you get a conflict with `ui_keybinding.xml` you will have to merge the changes yourself.
+* `ui_keybinding.xml` is not required anymore. If you get a conflict, you can just delete it.
 
 # But Why?
-This addon provides a new keybinding (`Toggle Scope`) in the settings menu under weapons section. Pressing this key while holding a weapon will quickly attach the *first* compatible scope from your inventory.
+This addon provides a new keybinding via MCM (v1.6+). Pressing this key while holding a weapon will quickly attach the *first* compatible scope from your inventory.
 
 If the weapon already has a scope attached, it will be removed and remembered as the "preferred" scope for that weapon. Double-tap the toggle button to quickly switch to the *next* compatible scope.
 
@@ -27,6 +27,7 @@ Last but not least, you can now drag a scope onto an already-scoped weapon witho
 * **1.6** Fixed weapons getting "jammed" when toggling scopes with the HUD turned off.
 * **1.7** Fixed crash when attempting to swap to an incompatible scope.
 * **1.8** Fixed secondary weapon unequip regression with *swap*.
+* **1.9** Switched to MCM custom keybinding.
 
 # Special Thanks
 RazorShultz, RavenAscendant, Big Angry Negro, SparksTheUnicorn, Lucy.xr, Maid, Noxilian
