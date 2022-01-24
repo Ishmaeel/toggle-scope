@@ -1,12 +1,15 @@
 --
--- ToggleScope v1.9
--- Last modified: 2022.01.23
+-- ToggleScope v1.9.1
+-- Last modified: 2022.01.24
+-- https://github.com/Ishmaeel/toggle-scope
 --
 KEY_TOGGLE_SCOPE = DIK_keys.DIK_ADD -- KeyPad Plus
 
+local mcm_keybinds = ui_mcm and ui_mcm.key_hold
+
 function on_game_start()
     RegisterScriptCallback("on_option_change", on_option_change)
-    on_option_change()
+    on_option_change(mcm_keybinds)
 end
 
 function on_mcm_load()
@@ -27,4 +30,3 @@ function on_option_change(mcm)
         KEY_TOGGLE_SCOPE = ui_mcm.get("toggle_scope/key_bind_toggle") or KEY_TOGGLE_SCOPE
     end
 end
-
