@@ -1,6 +1,6 @@
 --
 -- ToggleScope v1.9.1
--- Last modified: 2022.01.24
+-- Last modified: 2022.08.18
 -- https://github.com/Ishmaeel/toggle-scope
 --
 -- Special thanks:
@@ -416,5 +416,5 @@ function log_trace(msg, ...) printp("*", msg, ...) end
 function log_error(msg, ...) printp("!", msg, ...) end
 
 function printp(prefix, msg, ...)
-    -- printf(prefix .. " [IshyScope] " .. msg, ...)
+    printf(prefix .. " [IshyScope] " .. msg, ...)
 end
