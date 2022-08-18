@@ -11,11 +11,19 @@ local SECONDARY_WEAPON_SLOT = 2
 
 local switch_info = nil
 local is_secondary = nil
-local scopes_table = utils_data.collect_sections(ini_sys, {"addons_table"})
+local scopes_table = utils_data.collect_sections(ini_sys, { "addons_table" })
 local scope_mappings = {}
 
 local attach_scope_original = nil
 local detach_scope_original = nil
+
+-- because GetFireMode and SetFireMode speak different languages:
+local mode_mappings = {
+    [1] = { value = 0, name = "single" },
+    [2] = { value = 1, name = "burst" }, -- abakan
+    [3] = { value = 1, name = "burst" },
+    [-1] = { value = 2, name = "auto" }
+}
 
 function switch_scope()
     printp("#", "start.")
@@ -42,8 +50,6 @@ function switch_scope()
 
     log("active weapon: %s (#%s) parent: %s", switch_info.weapon_section, switch_info.weapon_id, switch_info.parent_section)
 
-    switch_info.saved_queue_size = get_queue_size(cWeapon)
-
     if switch_info.weapon_section == switch_info.parent_section or switch_info.force_attach then
         attach_valid_scope()
     elseif switch_info.parent_section or switch_info.force_detach then
@@ -51,17 +57,6 @@ function switch_scope()
     else
         reset_state("nothing to do.")
     end
-end
-
-function get_queue_size(cWeapon)
-    log_trace("get_queue_size")
-
-    local retval = ActorMenu.get_maingame().m_ui_hud_states.m_fire_mode:GetText()
-    if retval == "" then
-        retval = cWeapon:GetFireMode()
-        log("HUD turned off, defaulting to fire mode: %s", retval)
-    end
-    return retval
 end
 
 function attach_valid_scope()
@@ -112,7 +107,7 @@ function attach_scope_callback()
     local the_weapon = level.object_by_id(switch_info.weapon_id) or level.object_by_id(switch_info.new_weapon_id)
     local the_scope = level.object_by_id(switch_info.scope_id)
 
-    xr_effects.play_snd(db.actor, nil, {[1] = "interface\\inv_attach_addon"})
+    xr_effects.play_snd(db.actor, nil, { [1] = "interface\\inv_attach_addon" })
 
     if (switch_info.force_attach) then
         utils_item.attach_addon(the_weapon, the_scope, "scope", true)
@@ -162,7 +157,7 @@ function detach_scope_callback()
     local the_weapon = level.object_by_id(switch_info.weapon_id)
     local the_scope = level.object_by_id(switch_info.scope_id)
 
-    xr_effects.play_snd(db.actor, nil, {[1] = "interface\\inv_detach_addon"})
+    xr_effects.play_snd(db.actor, nil, { [1] = "interface\\inv_detach_addon" })
 
     if (switch_info.force_detach) then
         utils_item.detach_addon(the_weapon, nil, "scope")
@@ -201,13 +196,20 @@ function reset_firemode_callback()
         if weapon then
             log("new weapon: %s (#%s)", weapon:section(), weapon:id())
 
-            local new_queue_size = switch_info.saved_queue_size
-            if new_queue_size == "A" then
-                new_queue_size = WEAPON_INFINITE_QUEUE
-            end
+            local cWeaponMaggie = weapon:cast_WeaponMagazined()
 
-            log("resetting queue size to: %s (%s)", new_queue_size, switch_info.saved_queue_size)
-            weapon:set_queue_size(new_queue_size)
+            if cWeaponMaggie and cWeaponMaggie.SetFireMode then
+                log("[1.5.2] resetting firing mode to: #%s (%s)", switch_info.saved_fire_mode.value, switch_info.saved_fire_mode.name)
+                cWeaponMaggie:SetFireMode(switch_info.saved_fire_mode.value)
+            else
+                local new_queue_size = switch_info.saved_queue_size
+                if new_queue_size == "A" then
+                    new_queue_size = WEAPON_INFINITE_QUEUE
+                end
+
+                log("[1.5.1] resetting queue size to: %s (%s)", new_queue_size, switch_info.saved_queue_size)
+                weapon:set_queue_size(new_queue_size)
+            end
         end
     end
 
@@ -233,30 +235,40 @@ end
 function create_switch_info(the_weapon, cWeapon)
     log_trace("create_switch_info")
 
-    switch_info = {weapon_id = the_weapon:id(), weapon_section = the_weapon:section()}
-    switch_info.parent_section = ini_sys:r_string_ex(switch_info.weapon_section, "parent_section")
-    switch_info.valid_scopes = parse_list(ini_sys, switch_info.weapon_section, "scopes")
+    local info = { weapon_id = the_weapon:id(), weapon_section = the_weapon:section() }
+    info.parent_section = ini_sys:r_string_ex(info.weapon_section, "parent_section")
+    info.valid_scopes = parse_list(ini_sys, info.weapon_section, "scopes")
 
     local native_scope = cWeapon:GetScopeName()
     if native_scope then
         local is_attached = the_weapon:cast_Weapon():IsScopeAttached()
 
         log("weapon has native scope: %s (%s)", native_scope, (is_attached and "attached" or "detached"))
-        switch_info.native_scope = native_scope
-        switch_info.force_detach = is_attached
-        switch_info.force_attach = not is_attached
+        info.native_scope = native_scope
+        info.force_detach = is_attached
+        info.force_attach = not is_attached
 
-        table.insert(switch_info.valid_scopes, switch_info.native_scope)
+        table.insert(info.valid_scopes, info.native_scope)
     end
 
-    for _, scope_name in pairs(switch_info.valid_scopes) do
+    for _, scope_name in pairs(info.valid_scopes) do
         if db.actor:object(scope_name) then
-            switch_info.has_other_scopes = true
+            info.has_other_scopes = true
             break
         end
     end
 
-    return switch_info
+    info.saved_fire_mode = mode_mappings[cWeapon:GetFireMode() or 1]
+    info.saved_queue_size = ActorMenu.get_maingame().m_ui_hud_states.m_fire_mode:GetText()
+
+    if info.saved_queue_size == "" then
+        log("HUD turned off, defaulting to fire mode.")
+        info.saved_queue_size = info.saved_fire_mode
+    end
+
+    log("saved fire mode #%s (%s) queue size: %s", info.saved_fire_mode.value, info.saved_fire_mode.name, info.saved_queue_size)
+
+    return info
 end
 
 function find_first_scope(valid_scopes)
