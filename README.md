@@ -28,6 +28,7 @@ Last but not least, you can now drag a scope onto an already-scoped weapon witho
 * **1.7** Fixed crash when attempting to swap to an incompatible scope.
 * **1.8** Fixed secondary weapon unequip regression with *swap*.
 * **1.9** Switched to MCM custom keybinding.
+* **2.0** Added proper support for 1.5.2. Fixed glitchy firing mode preservation.
 
 # Special Thanks
 RazorShultz, RavenAscendant, Big Angry Negro, SparksTheUnicorn, Lucy.xr, Maid, Noxilian
